@@ -36,16 +36,20 @@ def build_goal_features(df):
                 history[home] = {
                     "gf_home": [],
                     "ga_home": [],
+                    "hst_home": [],
                     "gf_away": [],
-                    "ga_away": []
+                    "ga_away": [],
+                    "ast_away": []
                 }
 
             if away not in history:
                 history[away] = {
                     "gf_home": [],
                     "ga_home": [],
+                    "hst_home": [],
                     "gf_away": [],
-                    "ga_away": []
+                    "ga_away": [],
+                    "ast_away": []
                 }
 
             h = history[home]
@@ -55,17 +59,21 @@ def build_goal_features(df):
 
                 "HOME_GF_HOME": _avg(h["gf_home"][-FORM_MATCHES:]),
                 "HOME_GA_HOME": _avg(h["ga_home"][-FORM_MATCHES:]),
+                "HOME_HST_HOME": _avg(h["hst_home"][-FORM_MATCHES:]),
 
                 "AWAY_GF_AWAY": _avg(a["gf_away"][-FORM_MATCHES:]),
-                "AWAY_GA_AWAY": _avg(a["ga_away"][-FORM_MATCHES:])
+                "AWAY_GA_AWAY": _avg(a["ga_away"][-FORM_MATCHES:]),
+                "AWAY_AST_AWAY": _avg(a["ast_away"][-FORM_MATCHES:])
 
             })
 
             h["gf_home"].append(row["FTHG"])
             h["ga_home"].append(row["FTAG"])
+            h["hst_home"].append(row["HST"])
 
             a["gf_away"].append(row["FTAG"])
             a["ga_away"].append(row["FTHG"])
+            a["ast_away"].append(row["AST"])
 
     feat = pd.DataFrame(rows)
 
