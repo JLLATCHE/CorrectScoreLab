@@ -26,20 +26,32 @@ def predict_scores(df):
 
     for _, row in df.iterrows():
 
-        # Ajuste muy suave utilizando los nuevos indicadores
+        # Ajuste por tiros a puerta (V0.3)
         home_bonus = 1.0 + ((row["HOME_HST_HOME"] - row["HOME_GF_HOME"]) * 0.02)
         away_bonus = 1.0 + ((row["AWAY_AST_AWAY"] - row["AWAY_GF_AWAY"]) * 0.02)
 
         home_bonus = max(0.90, min(1.10, home_bonus))
         away_bonus = max(0.90, min(1.10, away_bonus))
 
+        # Ajuste muy suave por forma (V0.4 TEST-01)
+        home_form = 0.95 + (row["HOME_FORM_HOME"] * 0.10)
+        away_form = 0.95 + (row["AWAY_FORM_AWAY"] * 0.10)
+
         home_exp = (
-            row["HOME_GF_HOME"] * home_bonus * ATTACK_WEIGHT +
+            row["HOME_GF_HOME"]
+            * home_bonus
+            * home_form
+            * ATTACK_WEIGHT
+            +
             row["AWAY_GA_AWAY"] * DEFENSE_WEIGHT
         )
 
         away_exp = (
-            row["AWAY_GF_AWAY"] * away_bonus * ATTACK_WEIGHT +
+            row["AWAY_GF_AWAY"]
+            * away_bonus
+            * away_form
+            * ATTACK_WEIGHT
+            +
             row["HOME_GA_HOME"] * DEFENSE_WEIGHT
         )
 
