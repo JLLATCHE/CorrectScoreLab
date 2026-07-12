@@ -2,9 +2,6 @@ from loader import load_data
 from validator import validate
 from features import build_goal_features
 from predictor import predict_scores
-from ranking_dataset import export_ranking_dataset
-from ranking_trainer import train_ranking_engine
-from ranking_analysis import export_ranking_analysis
 from backtest import evaluate
 
 
@@ -22,16 +19,6 @@ def main():
 
     df = predict_scores(df)
 
-    # Exportar dataset del Ranking Engine
-    export_ranking_dataset(df)
-
-    # Entrenar Ranking Engine
-    train_ranking_engine()
-
-    # Análisis del laboratorio
-    export_ranking_analysis(df)
-
-    # Backtest principal
     result = evaluate(df)
 
     print()
