@@ -56,12 +56,16 @@ def build_goal_features(df):
                     "pts_home": [],
                     "score2_home": [],
                     "concede2_home": [],
+                    "btts_home": [],
+                    "over25_home": [],
                     "gf_away": [],
                     "ga_away": [],
                     "ast_away": [],
                     "pts_away": [],
                     "score2_away": [],
-                    "concede2_away": []
+                    "concede2_away": [],
+                    "btts_away": [],
+                    "over25_away": []
                 }
 
             if away not in history:
@@ -72,12 +76,16 @@ def build_goal_features(df):
                     "pts_home": [],
                     "score2_home": [],
                     "concede2_home": [],
+                    "btts_home": [],
+                    "over25_home": [],
                     "gf_away": [],
                     "ga_away": [],
                     "ast_away": [],
                     "pts_away": [],
                     "score2_away": [],
-                    "concede2_away": []
+                    "concede2_away": [],
+                    "btts_away": [],
+                    "over25_away": []
                 }
 
             h = history[home]
@@ -91,13 +99,17 @@ def build_goal_features(df):
                 "HOME_FORM_HOME": _form(h["pts_home"][-FORM_MATCHES:]),
                 "HOME_SCORE2_HOME": _rate(h["score2_home"][-FORM_MATCHES:]),
                 "HOME_CONCEDE2_HOME": _rate(h["concede2_home"][-FORM_MATCHES:]),
+                "HOME_BTTS_HOME": _rate(h["btts_home"][-FORM_MATCHES:]),
+                "HOME_OVER25_HOME": _rate(h["over25_home"][-FORM_MATCHES:]),
 
                 "AWAY_GF_AWAY": _avg(a["gf_away"][-FORM_MATCHES:]),
                 "AWAY_GA_AWAY": _avg(a["ga_away"][-FORM_MATCHES:]),
                 "AWAY_AST_AWAY": _avg(a["ast_away"][-FORM_MATCHES:]),
                 "AWAY_FORM_AWAY": _form(a["pts_away"][-FORM_MATCHES:]),
                 "AWAY_SCORE2_AWAY": _rate(a["score2_away"][-FORM_MATCHES:]),
-                "AWAY_CONCEDE2_AWAY": _rate(a["concede2_away"][-FORM_MATCHES:])
+                "AWAY_CONCEDE2_AWAY": _rate(a["concede2_away"][-FORM_MATCHES:]),
+                "AWAY_BTTS_AWAY": _rate(a["btts_away"][-FORM_MATCHES:]),
+                "AWAY_OVER25_AWAY": _rate(a["over25_away"][-FORM_MATCHES:])
 
             })
 
@@ -116,6 +128,8 @@ def build_goal_features(df):
 
             h["score2_home"].append(1 if row["FTHG"] >= 2 else 0)
             h["concede2_home"].append(1 if row["FTAG"] >= 2 else 0)
+            h["btts_home"].append(1 if row["FTHG"] > 0 and row["FTAG"] > 0 else 0)
+            h["over25_home"].append(1 if (row["FTHG"] + row["FTAG"]) >= 3 else 0)
 
             # Histórico visitante
 
@@ -132,6 +146,8 @@ def build_goal_features(df):
 
             a["score2_away"].append(1 if row["FTAG"] >= 2 else 0)
             a["concede2_away"].append(1 if row["FTHG"] >= 2 else 0)
+            a["btts_away"].append(1 if row["FTAG"] > 0 and row["FTHG"] > 0 else 0)
+            a["over25_away"].append(1 if (row["FTHG"] + row["FTAG"]) >= 3 else 0)
 
     feat = pd.DataFrame(rows)
 
