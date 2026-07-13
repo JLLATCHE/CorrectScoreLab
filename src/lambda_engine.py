@@ -45,7 +45,7 @@ def calculate_lambda(row):
 
     shots_adjustment = max(
         -0.05,
-        min(0.05, shots_edge * 0.01)
+        min(0.05, shots_edge * 0.015)
     )
 
     lambda_home = (
