@@ -3,6 +3,7 @@ import itertools
 
 from config import MAX_GOALS
 from lambda_engine import calculate_lambda
+from method_engine import apply_methods
 
 
 def poisson(lmbda, k):
@@ -17,6 +18,8 @@ def poisson(lmbda, k):
 def predict_scores(df):
 
     df = df.copy()
+
+    df = apply_methods(df)
 
     df["VALID"] = (
 
@@ -154,9 +157,7 @@ def predict_scores(df):
         if real in [
 
             df.at[i, "TOP1"],
-
             df.at[i, "TOP2"],
-
             df.at[i, "TOP3"]
 
         ]:

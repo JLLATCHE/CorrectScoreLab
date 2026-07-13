@@ -3,6 +3,7 @@ from validator import validate
 from features import build_goal_features
 from predictor import predict_scores
 from backtest import evaluate
+from method_analyzer import analyze
 
 
 def main():
@@ -18,6 +19,9 @@ def main():
     df = build_goal_features(df)
 
     df = predict_scores(df)
+
+    # Analizar métodos
+    analyze(df)
 
     result = evaluate(df)
 
