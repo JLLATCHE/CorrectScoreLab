@@ -16,6 +16,10 @@ from odds_filter_analyzer import analyze_odds_filters
 from season_exporter import export_season_results
 from one_one_season_lab import analyze_one_one_season
 from one_zero_season_lab import analyze_one_zero_season
+from rare_score_lab import analyze_rare_scores
+from extreme_score_lab import analyze_extreme_scores
+from blowout_detector_lab import analyze_blowout_detector
+from rare_strategy_backtest import backtest_rare_strategies
 
 
 def main():
@@ -55,6 +59,14 @@ def main():
     analyze_one_one_season(odds_result)
 
     analyze_one_zero_season(odds_result)
+
+    analyze_rare_scores(odds_result)
+
+    analyze_extreme_scores(odds_result)
+
+    analyze_blowout_detector(odds_result)
+
+    backtest_rare_strategies(odds_result)
 
     result = evaluate(df)
 
