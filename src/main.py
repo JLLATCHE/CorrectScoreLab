@@ -20,6 +20,8 @@ from rare_score_lab import analyze_rare_scores
 from extreme_score_lab import analyze_extreme_scores
 from blowout_detector_lab import analyze_blowout_detector
 from rare_strategy_backtest import backtest_rare_strategies
+from core_selector_lab import analyze_core_selectors
+from portfolio_backtest import backtest_portfolio
 
 
 def main():
@@ -67,6 +69,10 @@ def main():
     analyze_blowout_detector(odds_result)
 
     backtest_rare_strategies(odds_result)
+
+    analyze_core_selectors(odds_result)
+
+    backtest_portfolio(odds_result)
 
     result = evaluate(df)
 
