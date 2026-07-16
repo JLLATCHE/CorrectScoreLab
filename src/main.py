@@ -8,7 +8,7 @@ from method_analyzer import analyze
 from score_analyzer import analyze_scores
 from confusion_analyzer import analyze_confusions
 from one_one_analyzer import analyze_one_one
-from odds_loader import load_odds
+from odds_loader import load_odds, ODDS_SHEET
 from odds_matcher import match_odds
 from odds_backtest import evaluate_odds
 from odds_analyzer import analyze_odds
@@ -22,6 +22,7 @@ from blowout_detector_lab import analyze_blowout_detector
 from rare_strategy_backtest import backtest_rare_strategies
 from core_selector_lab import analyze_core_selectors
 from portfolio_backtest import backtest_portfolio
+from multileague_validation import register_validation
 
 
 def main():
@@ -72,7 +73,14 @@ def main():
 
     analyze_core_selectors(odds_result)
 
-    backtest_portfolio(odds_result)
+    portfolio_result = backtest_portfolio(
+        odds_result
+    )
+
+    register_validation(
+         ODDS_SHEET,
+        portfolio_result
+    )
 
     result = evaluate(df)
 

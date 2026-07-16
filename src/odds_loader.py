@@ -3,6 +3,17 @@ Odds Loader
 
 Carga y valida el dataset de cuotas
 de CorrectScoreLab.
+
+Permite seleccionar la temporada mediante
+el nombre de la pestaña del Excel.
+
+Formato esperado:
+ESP_2021
+ITA_2021
+ENG_2021
+GER_2021
+FRA_2021
+etc.
 """
 
 from pathlib import Path
@@ -18,12 +29,31 @@ ODDS_FILE = (
 )
 
 
-def load_odds():
+# ==========================================================
+# TEMPORADA ACTIVA
+# ==========================================================
+
+ODDS_SHEET = "ESP_2021"
+
+
+def load_odds(sheet_name=None):
 
     print()
     print("=" * 60)
     print("ODDS LOADER")
     print("=" * 60)
+
+    # Si no se especifica una pestaña,
+    # utiliza la temporada activa configurada arriba.
+
+    if sheet_name is None:
+        sheet_name = ODDS_SHEET
+
+    print(f"Temporada activa : {sheet_name}")
+
+    # ======================================================
+    # COMPROBAR ARCHIVO
+    # ======================================================
 
     if not ODDS_FILE.exists():
 
@@ -31,12 +61,32 @@ def load_odds():
             f"No se encuentra el archivo de cuotas:\n{ODDS_FILE}"
         )
 
-    df = pd.read_excel(ODDS_FILE)
+    # ======================================================
+    # COMPROBAR PESTAÑA
+    # ======================================================
+
+    excel_file = pd.ExcelFile(ODDS_FILE)
+
+    if sheet_name not in excel_file.sheet_names:
+
+        raise ValueError(
+            f"No existe la pestaña '{sheet_name}' "
+            f"en el archivo de cuotas.\n"
+            f"Pestañas disponibles: {excel_file.sheet_names}"
+        )
+
+    # ======================================================
+    # CARGAR TEMPORADA
+    # ======================================================
+
+    df = pd.read_excel(
+        ODDS_FILE,
+        sheet_name=sheet_name
+    )
 
     required_columns = [
 
         "FECHA",
-        "JORNADA",
         "LIGA",
         "LOCAL",
         "VISITANTE",
@@ -61,9 +111,9 @@ def load_odds():
             f"Faltan columnas obligatorias: {missing}"
         )
 
-    # ==========================
+    # ======================================================
     # NORMALIZACIÓN
-    # ==========================
+    # ======================================================
 
     df["FECHA"] = pd.to_datetime(
         df["FECHA"],
@@ -93,11 +143,12 @@ def load_odds():
         errors="coerce"
     )
 
-    # ==========================
+    # ======================================================
     # VALIDACIÓN
-    # ==========================
+    # ======================================================
 
     invalid_dates = df["FECHA"].isna().sum()
+
     invalid_odds = df["CUOTA"].isna().sum()
 
     duplicates = df.duplicated(
@@ -108,7 +159,8 @@ def load_odds():
         ]
     ).sum()
 
-    print(f"Partidos       : {len(df):,}")
+    print()
+    print(f"Partidos        : {len(df):,}")
     print(f"Fechas inválidas: {invalid_dates}")
     print(f"Cuotas inválidas: {invalid_odds}")
     print(f"Duplicados      : {duplicates}")
