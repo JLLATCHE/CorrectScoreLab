@@ -23,6 +23,9 @@ from rare_strategy_backtest import backtest_rare_strategies
 from core_selector_lab import analyze_core_selectors
 from portfolio_backtest import backtest_portfolio
 from multileague_validation import register_validation
+from data_integrity_guard import validate_season_integrity
+from excel_output_engine import export_excel_v1
+from bet_selector import build_bet_selections
 
 
 def main():
@@ -51,6 +54,13 @@ def main():
 
     matched_df = match_odds(df, odds_df)
 
+    validate_season_integrity(
+        odds_df=odds_df,
+         matched_df=matched_df,
+         season_name=ODDS_SHEET,
+        expected_matches=380
+)
+
     odds_result = evaluate_odds(matched_df)
 
     analyze_odds(odds_result)
@@ -77,9 +87,22 @@ def main():
         odds_result
     )
 
+    bet_selections = build_bet_selections(
+        portfolio_result=portfolio_result,
+         season_name=ODDS_SHEET,
+         mode="BACKTEST"
+    )
+
     register_validation(
          ODDS_SHEET,
-        portfolio_result
+         portfolio_result
+    )
+
+    export_excel_v1(
+        odds_result=odds_result,
+        portfolio_result=portfolio_result,
+        bet_selections=bet_selections,
+        season_name=ODDS_SHEET
     )
 
     result = evaluate(df)
