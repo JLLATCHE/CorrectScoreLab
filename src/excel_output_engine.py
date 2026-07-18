@@ -11,6 +11,8 @@ Archivo generado:
 data/results/CorrectScoreLab_V1.xlsx
 """
 
+from excel_formatter import format_excel
+
 from pathlib import Path
 
 import pandas as pd
@@ -430,6 +432,14 @@ def export_excel_v1(
             sheet_name="CONFIG",
             index=False
         )
+
+        # ======================================================
+    # FORMATO VISUAL AUTOMÁTICO
+    # ======================================================
+
+    format_excel(
+        OUTPUT_FILE
+    )
 
     print()
     print("Excel CorrectScoreLab V1 creado correctamente.")
