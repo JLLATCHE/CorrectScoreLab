@@ -1,11 +1,21 @@
 """
-Excel Output Engine V0.1
+Excel Output Engine V0.2
 
 Genera el Excel operativo base de CorrectScoreLab V1.
 
-Esta primera versión utiliza datos de BACKTEST para
-construir y validar la estructura que posteriormente
-utilizará el modo LIVE.
+Utiliza datos de BACKTEST para construir y validar
+la estructura que posteriormente utilizará el modo LIVE.
+
+Incluye:
+- Dashboard operativo
+- Jornada
+- Selecciones
+- CORE
+- RARE
+- Histórico
+- Validación multiliga
+- CORE Coverage histórico
+- Configuración
 
 Archivo generado:
 data/results/CorrectScoreLab_V1.xlsx
@@ -17,6 +27,10 @@ from pathlib import Path
 
 import pandas as pd
 
+
+# ==========================================================
+# ARCHIVOS
+# ==========================================================
 
 OUTPUT_FILE = (
     Path(__file__).resolve().parent.parent
@@ -32,6 +46,13 @@ VALIDATION_FILE = (
     / "multileague_validation.csv"
 )
 
+CORE_COVERAGE_FILE = (
+    Path(__file__).resolve().parent.parent
+    / "data"
+    / "results"
+    / "core_coverage_history.csv"
+)
+
 
 def export_excel_v1(
     odds_result,
@@ -44,7 +65,7 @@ def export_excel_v1(
 
     print()
     print("=" * 100)
-    print("EXCEL OUTPUT ENGINE V0.1")
+    print("EXCEL OUTPUT ENGINE V0.2")
     print("=" * 100)
 
     OUTPUT_FILE.parent.mkdir(
@@ -71,8 +92,9 @@ def export_excel_v1(
     rare_away_summary = portfolio_result["rare_away"]
     total_summary = portfolio_result["total"]
 
-        # ======================================================
+    # ======================================================
     # DASHBOARD V0.2
+    #
     # Fuente operativa:
     # Historical Engine -> Performance Engine
     #
@@ -205,7 +227,7 @@ def export_excel_v1(
     # ======================================================
 
     selections = (
-         bet_selections
+        bet_selections
         .copy()
     )
 
@@ -268,6 +290,35 @@ def export_excel_v1(
         )
 
     # ======================================================
+    # CORE COVERAGE HISTÓRICO
+    # ======================================================
+
+    if CORE_COVERAGE_FILE.exists():
+
+        core_coverage = pd.read_csv(
+            CORE_COVERAGE_FILE
+        )
+
+    else:
+
+        core_coverage = pd.DataFrame(
+            columns=[
+                "TEMPORADA",
+                "LIGA",
+                "PARTIDOS",
+                "CORE_SEÑALES",
+                "CORE_COBERTURA",
+                "CORE_P_MEDIA",
+                "CORE_P_MIN",
+                "CORE_P_MAX",
+                "CORE_STAKE",
+                "CORE_RETURN",
+                "CORE_PROFIT",
+                "CORE_ROI",
+            ]
+        )
+
+    # ======================================================
     # CONFIG
     # ======================================================
 
@@ -308,7 +359,7 @@ def export_excel_v1(
         ]
     )
 
-        # ======================================================
+    # ======================================================
     # RESUMEN MOTORES - PERFORMANCE ENGINE
     # Una fila = rendimiento económico por motor
     # ======================================================
@@ -347,7 +398,7 @@ def export_excel_v1(
         .astype(str)
     )
 
-        # ======================================================
+    # ======================================================
     # RENDIMIENTO MENSUAL
     # ======================================================
 
@@ -364,6 +415,10 @@ def export_excel_v1(
         OUTPUT_FILE,
         engine="openpyxl"
     ) as writer:
+
+        # ==================================================
+        # DASHBOARD
+        # ==================================================
 
         dashboard.to_excel(
             writer,
@@ -391,11 +446,19 @@ def export_excel_v1(
             )
         )
 
+        # ==================================================
+        # JORNADA
+        # ==================================================
+
         jornada.to_excel(
             writer,
             sheet_name="JORNADA",
             index=False
         )
+
+        # ==================================================
+        # SELECCIONES
+        # ==================================================
 
         selections.to_excel(
             writer,
@@ -403,11 +466,19 @@ def export_excel_v1(
             index=False
         )
 
+        # ==================================================
+        # CORE
+        # ==================================================
+
         core.to_excel(
             writer,
             sheet_name="CORE",
             index=False
         )
+
+        # ==================================================
+        # RARE
+        # ==================================================
 
         rare.to_excel(
             writer,
@@ -415,11 +486,19 @@ def export_excel_v1(
             index=False
         )
 
+        # ==================================================
+        # HISTORICO
+        # ==================================================
+
         historico.to_excel(
             writer,
             sheet_name="HISTORICO",
             index=False
         )
+
+        # ==================================================
+        # VALIDACION MULTILIGA
+        # ==================================================
 
         validation.to_excel(
             writer,
@@ -427,13 +506,36 @@ def export_excel_v1(
             index=False
         )
 
+        # ==================================================
+        # CORE COVERAGE
+        #
+        # Se coloca debajo de la tabla de validación
+        # dejando tres filas de separación.
+        # ==================================================
+
+        core_coverage_startrow = (
+            len(validation)
+            + 4
+        )
+
+        core_coverage.to_excel(
+            writer,
+            sheet_name="VALIDACION",
+            index=False,
+            startrow=core_coverage_startrow
+        )
+
+        # ==================================================
+        # CONFIG
+        # ==================================================
+
         config.to_excel(
             writer,
             sheet_name="CONFIG",
             index=False
         )
 
-        # ======================================================
+    # ======================================================
     # FORMATO VISUAL AUTOMÁTICO
     # ======================================================
 
@@ -441,10 +543,15 @@ def export_excel_v1(
         OUTPUT_FILE
     )
 
+    # ======================================================
+    # SALIDA CONSOLA
+    # ======================================================
+
     print()
     print("Excel CorrectScoreLab V1 creado correctamente.")
+
     print()
-    print(f"Archivo:")
+    print("Archivo:")
     print(OUTPUT_FILE)
 
     print()
@@ -454,5 +561,16 @@ def export_excel_v1(
     print(f"CORE               : {core_summary['signals']}")
     print(f"RARE HOME          : {rare_home_summary['signals']}")
     print(f"RARE AWAY          : {rare_away_summary['signals']}")
+
+    print()
+
+    print(
+        f"Temporadas CORE Coverage: "
+        f"{len(core_coverage)}"
+    )
+
+    # ======================================================
+    # RETURN
+    # ======================================================
 
     return OUTPUT_FILE

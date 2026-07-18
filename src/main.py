@@ -29,6 +29,8 @@ from bet_selector import build_bet_selections
 from bet_settlement_engine import settle_bets
 from historical_engine import build_historical
 from performance_engine import analyze_performance
+from multileague_analyzer import analyze_multileague
+from core_coverage_analyzer import analyze_core_coverage
 
 
 def main():
@@ -115,6 +117,13 @@ def main():
     register_validation(
          ODDS_SHEET,
          portfolio_result
+    )
+
+    multileague_analysis = analyze_multileague()
+
+    core_coverage = analyze_core_coverage(
+        portfolio_result=portfolio_result,
+        season_name=ODDS_SHEET
     )
 
     export_excel_v1(
