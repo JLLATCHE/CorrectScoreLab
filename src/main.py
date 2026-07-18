@@ -26,6 +26,9 @@ from multileague_validation import register_validation
 from data_integrity_guard import validate_season_integrity
 from excel_output_engine import export_excel_v1
 from bet_selector import build_bet_selections
+from bet_settlement_engine import settle_bets
+from historical_engine import build_historical
+from performance_engine import analyze_performance
 
 
 def main():
@@ -93,6 +96,22 @@ def main():
          mode="BACKTEST"
     )
 
+    settled_bets = settle_bets(
+    bet_selections=bet_selections,
+    odds_result=odds_result,
+    mode="BACKTEST"
+    )
+
+    historical = build_historical(
+    settled_bets=settled_bets,
+    initial_bank=0.0,
+    mode="BACKTEST"
+    )
+
+    performance = analyze_performance(
+    historical=historical
+    )
+
     register_validation(
          ODDS_SHEET,
          portfolio_result
@@ -102,6 +121,8 @@ def main():
         odds_result=odds_result,
         portfolio_result=portfolio_result,
         bet_selections=bet_selections,
+        historical=historical,
+        performance=performance,
         season_name=ODDS_SHEET
     )
 

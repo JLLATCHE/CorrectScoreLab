@@ -35,6 +35,8 @@ def export_excel_v1(
     odds_result,
     portfolio_result,
     bet_selections,
+    historical,
+    performance,
     season_name
 ):
 
@@ -67,9 +69,17 @@ def export_excel_v1(
     rare_away_summary = portfolio_result["rare_away"]
     total_summary = portfolio_result["total"]
 
+        # ======================================================
+    # DASHBOARD V0.2
+    # Fuente operativa:
+    # Historical Engine -> Performance Engine
+    #
+    # Riesgo principal:
+    # Portfolio por partido
     # ======================================================
-    # DASHBOARD
-    # ======================================================
+
+    global_perf = performance["global"]
+    risk_perf = performance["risk"]
 
     dashboard = pd.DataFrame(
         [
@@ -90,28 +100,68 @@ def export_excel_v1(
                 "VALOR": total_summary["matches"],
             },
             {
+                "METRICA": "APUESTAS INDIVIDUALES",
+                "VALOR": global_perf["BETS"],
+            },
+            {
+                "METRICA": "APUESTAS GANADAS",
+                "VALOR": global_perf["WINS"],
+            },
+            {
+                "METRICA": "APUESTAS PERDIDAS",
+                "VALOR": global_perf["LOSSES"],
+            },
+            {
+                "METRICA": "APUESTAS PENDIENTES",
+                "VALOR": global_perf["PENDING"],
+            },
+            {
+                "METRICA": "HIT RATE APUESTAS",
+                "VALOR": global_perf["HIT_RATE"] / 100,
+            },
+            {
                 "METRICA": "STAKE TOTAL",
-                "VALOR": total_summary["stake"],
+                "VALOR": global_perf["STAKE"],
             },
             {
                 "METRICA": "RETORNO",
-                "VALOR": total_summary["return"],
+                "VALOR": global_perf["RETURN"],
             },
             {
                 "METRICA": "BENEFICIO",
-                "VALOR": total_summary["profit"],
+                "VALOR": global_perf["PROFIT"],
             },
             {
                 "METRICA": "ROI",
-                "VALOR": total_summary["roi"],
+                "VALOR": global_perf["ROI"] / 100,
             },
             {
-                "METRICA": "MAX DRAWDOWN",
+                "METRICA": "BANK INICIAL",
+                "VALOR": risk_perf["INITIAL_BANK"],
+            },
+            {
+                "METRICA": "BANK FINAL",
+                "VALOR": risk_perf["FINAL_BANK"],
+            },
+            {
+                "METRICA": "BANK PEAK",
+                "VALOR": risk_perf["BANK_PEAK"],
+            },
+            {
+                "METRICA": "MAX DD PORTFOLIO",
                 "VALOR": total_summary["max_drawdown"],
             },
             {
-                "METRICA": "MAX RACHA NEGATIVA",
+                "METRICA": "MAX DD APUESTAS",
+                "VALOR": risk_perf["MAX_DRAWDOWN"],
+            },
+            {
+                "METRICA": "MAX RACHA NEGATIVA PORTFOLIO",
                 "VALOR": total_summary["max_losing_streak"],
+            },
+            {
+                "METRICA": "MAX RACHA APUESTAS PERDIDAS",
+                "VALOR": risk_perf["MAX_LOSING_STREAK"],
             },
         ]
     )
@@ -184,36 +234,11 @@ def export_excel_v1(
 
     # ======================================================
     # HISTÓRICO
-    # Primera versión basada en backtest
+    # Una fila = una apuesta liquidada
+    # Fuente: Historical Engine V0.1
     # ======================================================
 
-    historico = active.copy()
-
-    historico["BANK"] = (
-        historico["TOTAL_PROFIT"]
-        .cumsum()
-    )
-
-    historico["CUM_STAKE"] = (
-        historico["TOTAL_STAKE"]
-        .cumsum()
-    )
-
-    historico["CUM_RETURN"] = (
-        historico["TOTAL_RETURN"]
-        .cumsum()
-    )
-
-    historico["CUM_PROFIT"] = (
-        historico["TOTAL_PROFIT"]
-        .cumsum()
-    )
-
-    historico["CUM_ROI"] = (
-        historico["CUM_PROFIT"]
-        /
-        historico["CUM_STAKE"]
-    )
+    historico = historical.copy()
 
     # ======================================================
     # VALIDACIÓN MULTILIGA
@@ -281,37 +306,52 @@ def export_excel_v1(
         ]
     )
 
-    # ======================================================
-    # RESUMEN MOTORES
+        # ======================================================
+    # RESUMEN MOTORES - PERFORMANCE ENGINE
+    # Una fila = rendimiento económico por motor
     # ======================================================
 
-    engine_summary = pd.DataFrame(
-        [
-            {
-                "ENGINE": "CORE",
-                "SIGNALS": core_summary["signals"],
-                "STAKE": core_summary["stake"],
-                "RETURN": core_summary["return"],
-                "PROFIT": core_summary["profit"],
-                "ROI": core_summary["roi"],
-            },
-            {
-                "ENGINE": "RARE HOME",
-                "SIGNALS": rare_home_summary["signals"],
-                "STAKE": rare_home_summary["stake"],
-                "RETURN": rare_home_summary["return"],
-                "PROFIT": rare_home_summary["profit"],
-                "ROI": rare_home_summary["roi"],
-            },
-            {
-                "ENGINE": "RARE AWAY",
-                "SIGNALS": rare_away_summary["signals"],
-                "STAKE": rare_away_summary["stake"],
-                "RETURN": rare_away_summary["return"],
-                "PROFIT": rare_away_summary["profit"],
-                "ROI": rare_away_summary["roi"],
-            },
-        ]
+    engine_summary = (
+        performance["by_engine"]
+        .copy()
+    )
+
+    engine_summary = engine_summary.rename(
+        columns={
+            "MOTOR": "ENGINE",
+        }
+    )
+
+    engine_order = [
+        "CORE",
+        "RARE HOME",
+        "RARE AWAY",
+    ]
+
+    engine_summary["ENGINE"] = pd.Categorical(
+        engine_summary["ENGINE"],
+        categories=engine_order,
+        ordered=True
+    )
+
+    engine_summary = (
+        engine_summary
+        .sort_values("ENGINE")
+        .reset_index(drop=True)
+    )
+
+    engine_summary["ENGINE"] = (
+        engine_summary["ENGINE"]
+        .astype(str)
+    )
+
+        # ======================================================
+    # RENDIMIENTO MENSUAL
+    # ======================================================
+
+    monthly_summary = (
+        performance["by_month"]
+        .copy()
     )
 
     # ======================================================
@@ -334,6 +374,19 @@ def export_excel_v1(
             sheet_name="DASHBOARD",
             index=False,
             startrow=len(dashboard) + 3
+        )
+
+        monthly_summary.to_excel(
+            writer,
+            sheet_name="DASHBOARD",
+            index=False,
+            startrow=(
+                len(dashboard)
+                +
+                len(engine_summary)
+                +
+                7
+            )
         )
 
         jornada.to_excel(
