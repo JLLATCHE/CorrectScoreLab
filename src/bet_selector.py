@@ -1,5 +1,6 @@
 """
-Bet Selector V1
+Bet Selector V1.1
+Selecciones Operativas V0.2
 
 Convierte las señales generadas por CorrectScoreLab
 en apuestas individuales.
@@ -17,8 +18,13 @@ RARE AWAY:
     0-3 -> Stake 0.5
     1-4 -> Stake 0.5
 
-Esta estructura será utilizada tanto por BACKTEST
-como por el futuro modo LIVE.
+Añade:
+- ID_PARTIDO
+- ID_APUESTA
+- LIGA
+
+La estructura está preparada para BACKTEST
+y para el futuro modo LIVE.
 """
 
 import pandas as pd
@@ -29,20 +35,75 @@ import pandas as pd
 # ==========================================================
 
 CORE_STAKE = 1.0
-
 RARE_STAKE = 0.5
-
 
 RARE_HOME_SCORES = [
     "4-0",
     "4-1",
 ]
 
-
 RARE_AWAY_SCORES = [
     "0-3",
     "1-4",
 ]
+
+
+# ==========================================================
+# FUNCIONES AUXILIARES
+# ==========================================================
+
+def get_league_from_season(season_name):
+
+    if not season_name:
+
+        return ""
+
+    return str(season_name).split("_")[0]
+
+
+def clean_id_text(value):
+
+    return (
+        str(value)
+        .strip()
+        .upper()
+        .replace(" ", "_")
+        .replace("-", "_")
+        .replace("/", "_")
+    )
+
+
+def build_match_id(
+    season_name,
+    fecha,
+    local,
+    visitante
+):
+
+    if pd.isna(fecha):
+
+        fecha_text = "NO_DATE"
+
+    else:
+
+        fecha_text = pd.to_datetime(
+            fecha
+        ).strftime("%Y%m%d")
+
+    local_text = clean_id_text(
+        local
+    )
+
+    visitante_text = clean_id_text(
+        visitante
+    )
+
+    return (
+        f"{season_name}_"
+        f"{fecha_text}_"
+        f"{local_text}_"
+        f"{visitante_text}"
+    )
 
 
 # ==========================================================
@@ -57,7 +118,7 @@ def build_bet_selections(
 
     print()
     print("=" * 100)
-    print("BET SELECTOR V1")
+    print("BET SELECTOR V1.1 - SELECCIONES V0.2")
     print("=" * 100)
 
     portfolio = (
@@ -65,7 +126,15 @@ def build_bet_selections(
         .copy()
     )
 
+   
+
+    league = get_league_from_season(
+        season_name
+    )
+
     selections = []
+
+    bet_counter = 1
 
     # ======================================================
     # RECORRER PARTIDOS
@@ -105,6 +174,13 @@ def build_bet_selections(
             None
         )
 
+        match_id = build_match_id(
+            season_name=season_name,
+            fecha=fecha,
+            local=local,
+            visitante=visitante
+        )
+
         # ==================================================
         # CORE
         # ==================================================
@@ -114,10 +190,25 @@ def build_bet_selections(
             False
         ):
 
+            bet_id = (
+                f"{match_id}_"
+                f"CORE_"
+                f"{bet_counter:04d}"
+            )
+
             selections.append(
                 {
+                    "ID_PARTIDO":
+                        match_id,
+
+                    "ID_APUESTA":
+                        bet_id,
+
                     "TEMPORADA":
                         season_name,
+
+                    "LIGA":
+                        league,
 
                     "MODO":
                         mode,
@@ -146,11 +237,11 @@ def build_bet_selections(
                     "CUOTA":
                         None,
 
-                    "RESULTADO_REAL":
-                        real_score,
-
                     "ESTADO":
                         "PENDIENTE",
+
+                    "RESULTADO_REAL":
+                        real_score,
 
                     "RETORNO":
                         None,
@@ -159,6 +250,8 @@ def build_bet_selections(
                         None,
                 }
             )
+
+            bet_counter += 1
 
         # ==================================================
         # RARE HOME
@@ -171,10 +264,26 @@ def build_bet_selections(
 
             for score in RARE_HOME_SCORES:
 
+                bet_id = (
+                    f"{match_id}_"
+                    f"RARE_HOME_"
+                    f"{score.replace('-', '')}_"
+                    f"{bet_counter:04d}"
+                )
+
                 selections.append(
                     {
+                        "ID_PARTIDO":
+                            match_id,
+
+                        "ID_APUESTA":
+                            bet_id,
+
                         "TEMPORADA":
                             season_name,
+
+                        "LIGA":
+                            league,
 
                         "MODO":
                             mode,
@@ -203,11 +312,11 @@ def build_bet_selections(
                         "CUOTA":
                             None,
 
-                        "RESULTADO_REAL":
-                            real_score,
-
                         "ESTADO":
                             "PENDIENTE",
+
+                        "RESULTADO_REAL":
+                            real_score,
 
                         "RETORNO":
                             None,
@@ -216,6 +325,8 @@ def build_bet_selections(
                             None,
                     }
                 )
+
+                bet_counter += 1
 
         # ==================================================
         # RARE AWAY
@@ -228,10 +339,26 @@ def build_bet_selections(
 
             for score in RARE_AWAY_SCORES:
 
+                bet_id = (
+                    f"{match_id}_"
+                    f"RARE_AWAY_"
+                    f"{score.replace('-', '')}_"
+                    f"{bet_counter:04d}"
+                )
+
                 selections.append(
                     {
+                        "ID_PARTIDO":
+                            match_id,
+
+                        "ID_APUESTA":
+                            bet_id,
+
                         "TEMPORADA":
                             season_name,
+
+                        "LIGA":
+                            league,
 
                         "MODO":
                             mode,
@@ -260,11 +387,11 @@ def build_bet_selections(
                         "CUOTA":
                             None,
 
-                        "RESULTADO_REAL":
-                            real_score,
-
                         "ESTADO":
                             "PENDIENTE",
+
+                        "RESULTADO_REAL":
+                            real_score,
 
                         "RETORNO":
                             None,
@@ -274,13 +401,18 @@ def build_bet_selections(
                     }
                 )
 
+                bet_counter += 1
+
     # ======================================================
     # DATAFRAME
     # ======================================================
 
     columns = [
 
+        "ID_PARTIDO",
+        "ID_APUESTA",
         "TEMPORADA",
+        "LIGA",
         "MODO",
         "FECHA",
         "LOCAL",
@@ -290,8 +422,8 @@ def build_bet_selections(
         "P_MODELO",
         "STAKE",
         "CUOTA",
-        "RESULTADO_REAL",
         "ESTADO",
+        "RESULTADO_REAL",
         "RETORNO",
         "PROFIT",
 
@@ -306,60 +438,76 @@ def build_bet_selections(
     # RESUMEN
     # ======================================================
 
-    core_bets = (
+    if len(bets) > 0:
 
-        bets["MOTOR"]
-        .eq("CORE")
-        .sum()
+        core_bets = (
+            bets["MOTOR"]
+            .eq("CORE")
+            .sum()
+        )
 
-        if len(bets) > 0
+        rare_home_bets = (
+            bets["MOTOR"]
+            .eq("RARE HOME")
+            .sum()
+        )
 
-        else 0
+        rare_away_bets = (
+            bets["MOTOR"]
+            .eq("RARE AWAY")
+            .sum()
+        )
 
-    )
+        total_stake = (
+            bets["STAKE"]
+            .sum()
+        )
 
-    rare_home_bets = (
+        unique_matches = (
+            bets["ID_PARTIDO"]
+            .nunique()
+        )
 
-        bets["MOTOR"]
-        .eq("RARE HOME")
-        .sum()
+        unique_bets = (
+            bets["ID_APUESTA"]
+            .nunique()
+        )
 
-        if len(bets) > 0
+    else:
 
-        else 0
-
-    )
-
-    rare_away_bets = (
-
-        bets["MOTOR"]
-        .eq("RARE AWAY")
-        .sum()
-
-        if len(bets) > 0
-
-        else 0
-
-    )
-
-    total_stake = (
-
-        bets["STAKE"].sum()
-
-        if len(bets) > 0
-
-        else 0
-    )
+        core_bets = 0
+        rare_home_bets = 0
+        rare_away_bets = 0
+        total_stake = 0
+        unique_matches = 0
+        unique_bets = 0
 
     print()
     print(f"Temporada          : {season_name}")
+    print(f"Liga               : {league}")
     print(f"Modo               : {mode}")
+
     print()
+    print(f"Partidos apostados : {unique_matches}")
     print(f"Apuestas CORE      : {core_bets}")
     print(f"Apuestas RARE HOME : {rare_home_bets}")
     print(f"Apuestas RARE AWAY : {rare_away_bets}")
+
     print("-" * 40)
+
     print(f"Apuestas totales   : {len(bets)}")
+    print(f"IDs únicos apuesta : {unique_bets}")
     print(f"Stake total        : {total_stake:.2f}")
+
+    # ======================================================
+    # CONTROL DE INTEGRIDAD
+    # ======================================================
+
+    if unique_bets != len(bets):
+
+        raise ValueError(
+            "Existen ID_APUESTA duplicados "
+            "en Bet Selector."
+        )
 
     return bets

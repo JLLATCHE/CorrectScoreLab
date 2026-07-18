@@ -100,6 +100,7 @@ def backtest_portfolio(df):
 
         "TOP1",
         "P_TOP1",
+        "VALID",
         "ODDS_REAL_SCORE",
         "CUOTA",
 
@@ -171,54 +172,67 @@ def backtest_portfolio(df):
 
     # ======================================================
     # SEÑALES
+    # Solo partidos con histórico válido pueden generar apuesta
     # ======================================================
 
     data["_CORE"] = (
 
-        data["P_TOP1"]
+        data["VALID"].eq(True)
 
-        >=
+         &
 
-        CORE_MIN_P
+         (
+             data["P_TOP1"]
+            >=
+            CORE_MIN_P
+         )
 
     )
 
     data["_RARE_HOME"] = (
 
-        (
-            data["CS004_SHOTS_EDGE"]
-            >= 1.0
-        )
+         data["VALID"].eq(True)
 
-        &
+         &
 
         (
-            data["CS007_HOME_ATTACK_EDGE"]
-            >= 2.0
-        )
+             data["CS004_SHOTS_EDGE"]
+              >= 1.0
+         )
+
+         &
+
+         (
+             data["CS007_HOME_ATTACK_EDGE"]
+             >= 2.0
+         )
 
     )
 
     data["_RARE_AWAY"] = (
 
+         data["VALID"].eq(True)
+
+         &
+
         (
             data["CS004_SHOTS_EDGE"]
-            <= -0.5
-        )
+             <= -0.5
+         )
 
-        &
+         &
 
-        (
+         (
             data["CS002_DOMINANCE"]
-            <= -0.5
+             <= -0.5
         )
 
-        &
+         &
 
         (
             data["CS007_AWAY_ATTACK_EDGE"]
-            >= 1.2
-        )
+             >= 1.2
+         )
 
     )
 
