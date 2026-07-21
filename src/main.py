@@ -31,6 +31,8 @@ from historical_engine import build_historical
 from performance_engine import analyze_performance
 from multileague_analyzer import analyze_multileague
 from core_coverage_analyzer import analyze_core_coverage
+from core_filter_analyzer import analyze_core_filters
+from core_profile_analyzer import analyze_core_profiles
 
 
 def main():
@@ -68,6 +70,19 @@ def main():
 
     odds_result = evaluate_odds(matched_df)
 
+    print()
+    print("=" * 100)
+    print("COLUMNAS ODDS_RESULT")
+    print("=" * 100)
+
+    for column in odds_result.columns:
+        print(column)
+
+    analyze_core_filters(
+         df=odds_result,
+        season_name=ODDS_SHEET
+    )
+
     analyze_odds(odds_result)
 
     analyze_odds_filters(odds_result)
@@ -87,6 +102,11 @@ def main():
     backtest_rare_strategies(odds_result)
 
     analyze_core_selectors(odds_result)
+
+    analyze_core_profiles(
+        odds_result=odds_result,
+        season_name=ODDS_SHEET
+    )
 
     portfolio_result = backtest_portfolio(
         odds_result

@@ -45,27 +45,27 @@ OUTPUT_DIR = (
 SEASONS = [
 
     {
-        "input_file": "ENG_2021.csv",
+        "input_file": "ENG_2022.csv",
         "league": "INGLATERRA",
-        "season": "2021_22",
+        "season": "2022_23",
     },
 
     {
-        "input_file": "ITA_2021.csv",
+        "input_file": "ITA_2022.csv",
         "league": "ITALIA",
-        "season": "2021_22",
+        "season": "2022_23",
     },
 
     {
-        "input_file": "GER_2021.csv",
+        "input_file": "GER_2022.csv",
         "league": "ALEMANIA",
-        "season": "2021_22",
+        "season": "2022_23",
     },
 
     {
-        "input_file": "FRA_2021.csv",
+        "input_file": "FRA_2022.csv",
         "league": "FRANCIA",
-        "season": "2021_22",
+        "season": "2022_23",
     },
 
 ]

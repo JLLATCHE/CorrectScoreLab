@@ -33,7 +33,7 @@ ODDS_FILE = (
 # TEMPORADA ACTIVA
 # ==========================================================
 
-ODDS_SHEET = "ITA_2021"
+ODDS_SHEET = "ESP_2021"
 
 
 def load_odds(sheet_name=None):
